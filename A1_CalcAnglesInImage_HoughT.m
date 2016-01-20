@@ -2,15 +2,16 @@
 %% Find angles of pencils using Hough Functions
 
 % Load an image.
-img = imread('images/SixCrossed.JPG');
+img = imread('images/CrossedPencilsA.JPG');
 imshow(img)
+
+rm_blue = double(double(img(:,:,1)) + double(img(:, :, 2)))/2;
+imshow(rm_blue);
 
 % Gray Scale
 img_g = rgb2gray(img);
 
-
-
-th = 120;
+th = 165;
 th_image = zeros(size(img_g)); % create a black image with size of bw
 th_index = find(img_g<th); % Finds all the index that satisfy the threshold
 th_image(th_index) = 1; % Takes all the indices and assigns one to them, creating a black and white file from the gray scale. 
@@ -29,7 +30,7 @@ axis on, axis normal, hold on;
 colormap(hot)
 
 % Find peaks in teh Hough transform
-peaks = houghpeaks(H, 3, 'threshold', ceil(0.3*max(H(:))));
+peaks = houghpeaks(H, 3, 'threshold', ceil(0.7*max(H(:))));
 
 % Plot on colormap
 x = theta(peaks(:, 2));
