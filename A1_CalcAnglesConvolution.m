@@ -2,7 +2,7 @@
 % Calc the angles, orientation, and position of pencils. 
 
 % Get the image. 
-img = imread('images/CrossedPencilsA.JPG');
+img = imread('images/SixCrossed.JPG');
 imshow(img)
 
 % Convert RGB image to chosen color space
@@ -74,38 +74,45 @@ imshow(maskedGray)
 imgedg = edge(maskedGray, 'log');
 imshow(imgedg)
 
+maskedGray(find(maskedGray)) = 1;
+
+smooth = imdilate(imgedg,strel('disk',1));
+imshow(smooth)
+
 % Find Regions and display
-[B, L] = bwboundaries(imgedg, 'holes');
+[B, L] = bwboundaries(smooth, 'holes');
 numRegions = max(L(:));
 imshow(label2rgb(L))
 
 % Clean up image based on segments
-L = bwareaopen(L, 100);
+L = bwareaopen(L, 400);
 imshow(L)
 
 % Clean the border of the image from artifacts. 
 L = imclearborder(L);
 imshow(L)
 
-% Find shapes based on eccentricity
-stats = regionprops(L, 'all');
-shapes = [stats.Eccentricity];
-pencils_index = find(shapes > 0.98);
+% Thin the image
+L_thin = bwmorph(L, 'thin', inf);
+imshow(L_thin)
+imgedg = L_thin;
 
-
-% Location of pencils
-pencils = stats(pencils_index);
-locations = [pencils.Centroid];
-
-
-figure;
-imshow(th_image); hold on;
-for k = 1:(length(locations)/2)
-    plot(locations((k*2)-1), locations((k*2)), 'x', 'LineWidth', 2, 'Color', 'red'); 
-end
-
-
-
+% % Find shapes based on eccentricity
+% stats = regionprops(L, 'all');
+% shapes = [stats.Eccentricity];
+% pencils_index = find(shapes > 0.98);
+% 
+% 
+% % Location of pencils
+% pencils = stats(pencils_index);
+% locations = [pencils.Centroid];
+% 
+% 
+% figure;
+% imshow(th_image); hold on;
+% for k = 1:(length(locations)/2)
+%     plot(locations((k*2)-1), locations((k*2)), 'x', 'LineWidth', 2, 'Color', 'red'); 
+% end
 
 
 %Crop the outer ridges of the image. 
@@ -114,6 +121,9 @@ imgedg = imcrop(imgedg,[30,30,height-60, width-60]);
 img = imcrop(img,[30,30,height-60, width-60]);
 imshow(imgedg)
 
+%smooth image
+imgedg = imdilate(imgedg,strel('disk',1));
+imshow(imgedg)
 
 % Compute hough transform. 
 [H, theta, rho] = hough(imgedg);
@@ -127,7 +137,8 @@ axis on, axis normal, hold on;
 colormap(hot)
 
 % Find peaks in teh Hough transform
-peaks = houghpeaks(H, 2);
+% change peaks based on blobs. 
+peaks = houghpeaks(H, 6, 'threshold', 10);
 
 % Plot on colormap
 x = theta(peaks(:, 2));
@@ -135,7 +146,7 @@ y = rho(peaks(:,1));
 plot(x,y,'s', 'color', 'black')
  
 % Find lines using houghlines
-lines = houghlines(imgedg, theta, rho, peaks, 'FillGap', 5, 'MinLength', 7);
+lines = houghlines(imgedg, theta, rho, peaks, 'FillGap', 50, 'MinLength', 100);
 
 % Plot lines on original image. 
 figure, imshow(img), hold on
