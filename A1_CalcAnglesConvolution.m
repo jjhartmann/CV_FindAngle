@@ -2,7 +2,7 @@
 % Calc the angles, orientation, and position of pencils. 
 
 % Get the image. 
-img = imread('images/SixCrossed.JPG');
+img = imread('images/CrossedPencilsA.JPG');
 imshow(img)
 
 % Convert RGB image to chosen color space
@@ -81,7 +81,6 @@ imshow(smooth)
 
 % Find Regions and display
 [B, L] = bwboundaries(smooth, 'holes');
-numRegions = max(L(:));
 imshow(label2rgb(L))
 
 % Clean up image based on segments
@@ -91,6 +90,8 @@ imshow(L)
 % Clean the border of the image from artifacts. 
 L = imclearborder(L);
 imshow(L)
+
+numRegions = max(L(:));
 
 % Thin the image
 L_thin = bwmorph(L, 'thin', inf);
@@ -146,7 +147,7 @@ y = rho(peaks(:,1));
 plot(x,y,'s', 'color', 'black')
  
 % Find lines using houghlines
-lines = houghlines(imgedg, theta, rho, peaks, 'FillGap', 50, 'MinLength', 100);
+lines = houghlines(imgedg, theta, rho, peaks, 'FillGap', 40, 'MinLength', 100);
 
 % Plot lines on original image. 
 figure, imshow(img), hold on
