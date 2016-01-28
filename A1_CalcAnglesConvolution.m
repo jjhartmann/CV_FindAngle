@@ -45,10 +45,9 @@ imshow(maskedGray)
 
 % Convert to binary image
 % Threshold
-
-
-% imgedg = edge(th_image, 'log');
-% imshow(imgedg)
+th = 100;
+th_image = im2bw(maskedGray, th/255);
+imshow(th_image)
 
 % TODO: Smoothing of the image. Needs to promote the pencils more. 
 % laplacian of gaussian
