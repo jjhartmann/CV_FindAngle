@@ -2,7 +2,7 @@
 % Calc the angles, orientation, and position of pencils. 
 
 % Get the image. 
-img = imread('images/Touching.JPG');
+img = imread('images/CrossedPencilsA.JPG');
 imshow(img)
 
 % Convert RGB image to chosen color space
@@ -45,39 +45,17 @@ imshow(maskedGray)
 
 % Convert to binary image
 % Threshold
-th = 100;
-th_image = im2bw(maskedGray, th/255);
-imshow(th_image)
-
-% Clean up image based on segments
-th_image = bwareaopen(th_image, 100);
-imshow(th_image)
-
-% Clean the border of the image from artifacts. 
-th_image = imclearborder(th_image);
-imshow(th_image)
-
-
-% Find Regions and display
-[B, L] = bwboundaries(th_image, 'noholes');
-numRegions = max(L(:));
-imshow(label2rgb(L))
-
-% Find shapes based on eccentricity
-stats = regionprops(L, 'all');
-shapes = [stats.Eccentricity];
-pencils = find(shapes > 0.98);
-
-
-% Location of pencils
-locations = [stats.Centroid];
-
-figure;
-imshow(th_image); hold on;
-for k = 1:(length(locations)/2)
-    plot(locations((k*2)-1), locations((k*2)), 'x', 'LineWidth', 2, 'Color', 'red'); 
-end
-
+% th = 100;
+% th_image = im2bw(maskedGray, th/255);
+% imshow(th_image)
+% 
+% % Clean up image based on segments
+% th_image = bwareaopen(th_image, 100);
+% imshow(th_image)
+% 
+% % Clean the border of the image from artifacts. 
+% th_image = imclearborder(th_image);
+% imshow(th_image)
 
 % % TODO: Smoothing of the image. Needs to promote the pencils more. 
 % % laplacian of gaussian
@@ -95,6 +73,40 @@ end
 %Find the edges of the image using laplacian of gaussian. 
 imgedg = edge(maskedGray, 'log');
 imshow(imgedg)
+
+% Find Regions and display
+[B, L] = bwboundaries(imgedg, 'holes');
+numRegions = max(L(:));
+imshow(label2rgb(L))
+
+% Clean up image based on segments
+L = bwareaopen(L, 100);
+imshow(L)
+
+% Clean the border of the image from artifacts. 
+L = imclearborder(L);
+imshow(L)
+
+% Find shapes based on eccentricity
+stats = regionprops(L, 'all');
+shapes = [stats.Eccentricity];
+pencils_index = find(shapes > 0.98);
+
+
+% Location of pencils
+pencils = stats(pencils_index);
+locations = [pencils.Centroid];
+
+
+figure;
+imshow(th_image); hold on;
+for k = 1:(length(locations)/2)
+    plot(locations((k*2)-1), locations((k*2)), 'x', 'LineWidth', 2, 'Color', 'red'); 
+end
+
+
+
+
 
 %Crop the outer ridges of the image. 
 [width, height] = size(imgedg);
@@ -115,7 +127,7 @@ axis on, axis normal, hold on;
 colormap(hot)
 
 % Find peaks in teh Hough transform
-peaks = houghpeaks(H, 3, 'threshold', ceil(0.7*max(H(:))));
+peaks = houghpeaks(H, 2);
 
 % Plot on colormap
 x = theta(peaks(:, 2));
