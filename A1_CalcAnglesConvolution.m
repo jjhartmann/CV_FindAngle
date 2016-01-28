@@ -49,6 +49,14 @@ th = 100;
 th_image = im2bw(maskedGray, th/255);
 imshow(th_image)
 
+% Clean up image based on segments
+th_image = bwareaopen(th_image, 100);
+imshow(th_image)
+
+% Clean the border of the image from artifacts. 
+th_image = imclearborder(th_image);
+imshow(th_image)
+
 % TODO: Smoothing of the image. Needs to promote the pencils more. 
 % laplacian of gaussian
 h = fspecial('log',15,3);
