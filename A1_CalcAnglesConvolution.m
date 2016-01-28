@@ -5,19 +5,50 @@
 img = imread('images/Red_Green_Pencils.JPG');
 imshow(img)
 
-%convert the image to a gray scale image
-bw = double(1.2 * double(img(:,:,1)) + 1.2 * double(img(:, :, 2)) + .2 * double(img(:, :, 3)))/(3*255);
-imshow(bw);
+% Convert RGB image to chosen color space
+RGB = im2double(img);
+cform = makecform('srgb2lab', 'AdaptedWhitePoint', whitepoint('D65'));
+I = applycform(RGB,cform);
+imshow(RGB)
 
+% Define thresholds for channel 1 based on histogram settings
+channel1Min = 13.262;
+channel1Max = 67.444;
+
+% Define thresholds for channel 2 based on histogram settings
+channel2Min = -1.205;
+channel2Max = 14.341;
+
+% Define thresholds for channel 3 based on histogram settings
+channel3Min = -13.473;
+channel3Max = 13.090;
+
+% Create mask based on chosen histogram thresholds
+BW = (I(:,:,1) >= channel1Min ) & (I(:,:,1) <= channel1Max) & ...
+    (I(:,:,2) >= channel2Min ) & (I(:,:,2) <= channel2Max) & ...
+    (I(:,:,3) >= channel3Min ) & (I(:,:,3) <= channel3Max);
+
+% Invert mask
+BW = ~BW;
+
+% Initialize output masked image based on input image.
+maskedRGBImage = RGB;
+
+% Set background pixels where BW is false to zero.
+maskedRGBImage(repmat(~BW,[1 1 3])) = 0;
+maskedGray = rgb2gray(maskedRGBImage);
+imshow(maskedGray)
+
+% %convert the image to a gray scale image
+% bw = double(1.2 * double(img(:,:,1)) + 1.2 * double(img(:, :, 2)) + .2 * double(img(:, :, 3)))/(3*255);
+% imshow(bw);
+
+% Convert to binary image
 % Threshold
-th = .53;
-th_image = zeros(size(bw)); % create a black image with size of bw
-th_index = find(bw<th); % Finds all the index that satisfy the threshold
-th_image(th_index) = 1; % Takes all the indices and assigns one to them, creating a black and white file from the gray scale. 
-imshow(th_image)
 
-imgedg = edge(th_image, 'log');
-imshow(imgedg)
+
+% imgedg = edge(th_image, 'log');
+% imshow(imgedg)
 
 % TODO: Smoothing of the image. Needs to promote the pencils more. 
 % laplacian of gaussian
