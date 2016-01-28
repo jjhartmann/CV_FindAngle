@@ -2,7 +2,7 @@
 % Calc the angles, orientation, and position of pencils. 
 
 % Get the image. 
-img = imread('images/Red_Green_Pencils.JPG');
+img = imread('images/Touching.JPG');
 imshow(img)
 
 % Convert RGB image to chosen color space
@@ -57,21 +57,43 @@ imshow(th_image)
 th_image = imclearborder(th_image);
 imshow(th_image)
 
-% TODO: Smoothing of the image. Needs to promote the pencils more. 
-% laplacian of gaussian
-h = fspecial('log',15,3);
-bg=filter2(h, th_image);
-surf(h);  %Display the mask
-%Can't display the result of the convolution directly because it has
-%negative values.
-%Add an offset and then scale to 0-1 range for display purposes
-bgs=bg+.5;
-bgs=bgs-min(bgs(:));
-bgs=bgs/max(bgs(:));
-imshow(bgs);
+
+% Find Regions and display
+[B, L] = bwboundaries(th_image, 'noholes');
+numRegions = max(L(:));
+imshow(label2rgb(L))
+
+% Find shapes based on eccentricity
+stats = regionprops(L, 'all');
+shapes = [stats.Eccentricity];
+pencils = find(shapes > 0.98);
+
+
+% Location of pencils
+locations = [stats.Centroid];
+
+figure;
+imshow(th_image); hold on;
+for k = 1:(length(locations)/2)
+    plot(locations((k*2)-1), locations((k*2)), 'x', 'LineWidth', 2, 'Color', 'red'); 
+end
+
+
+% % TODO: Smoothing of the image. Needs to promote the pencils more. 
+% % laplacian of gaussian
+% h = fspecial('log',15,3);
+% bg=filter2(h, th_image);
+% surf(h);  %Display the mask
+% %Can't display the result of the convolution directly because it has
+% %negative values.
+% %Add an offset and then scale to 0-1 range for display purposes
+% bgs=bg+.5;
+% bgs=bgs-min(bgs(:));
+% bgs=bgs/max(bgs(:));
+% imshow(bgs);
 
 %Find the edges of the image using laplacian of gaussian. 
-imgedg = edge(bgs, 'log');
+imgedg = edge(maskedGray, 'log');
 imshow(imgedg)
 
 %Crop the outer ridges of the image. 
@@ -83,6 +105,8 @@ imshow(imgedg)
 
 % Compute hough transform. 
 [H, theta, rho] = hough(imgedg);
+
+
 
 % Display transform data
 figure, imshow(imadjust(mat2gray(H)), [], 'XData', theta, 'YData', rho,'InitialMagnification', 'fit');
