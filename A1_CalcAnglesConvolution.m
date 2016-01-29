@@ -1,17 +1,17 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Calc the angles, orientation, and position of pencils. 
 
-% Get the image. 
+%% Get the image. 
 img = imread('images/CrossedPencilsA.JPG');
 imshow(img)
 
-% Convert RGB image to chosen color space
+%% Convert RGB image to chosen color space
 RGB = im2double(img);
 cform = makecform('srgb2lab', 'AdaptedWhitePoint', whitepoint('D65'));
 I = applycform(RGB,cform);
 imshow(RGB)
 
-% Define thresholds for channel 1 based on histogram settings
+%% Define thresholds for channel 1 based on histogram settings
 channel1Min = 13.262;
 channel1Max = 67.444;
 
@@ -34,12 +34,12 @@ BW = ~BW;
 % Initialize output masked image based on input image.
 maskedRGBImage = RGB;
 
-% Set background pixels where BW is false to zero.
+%% Set background pixels where BW is false to zero.
 maskedRGBImage(repmat(~BW,[1 1 3])) = 0;
 maskedGray = rgb2gray(maskedRGBImage);
 imshow(maskedGray)
 
-% %convert the image to a gray scale image
+%% %convert the image to a gray scale image
 % bw = double(1.2 * double(img(:,:,1)) + 1.2 * double(img(:, :, 2)) + .2 * double(img(:, :, 3)))/(3*255);
 % imshow(bw);
 
@@ -70,7 +70,7 @@ imshow(maskedGray)
 % bgs=bgs/max(bgs(:));
 % imshow(bgs);
 
-%Find the edges of the image using laplacian of gaussian. 
+%% Find the edges of the image using laplacian of gaussian. 
 imgedg = edge(maskedGray, 'log');
 imshow(imgedg)
 
@@ -79,26 +79,26 @@ maskedGray(find(maskedGray)) = 1;
 smooth = imdilate(imgedg,strel('disk',1));
 imshow(smooth)
 
-% Find Regions and display
+%% Find Regions and display
 [B, L] = bwboundaries(smooth, 'holes');
 imshow(label2rgb(L))
 
-% Clean up image based on segments
+%% Clean up image based on segments
 L = bwareaopen(L, 400);
 imshow(L)
 
-% Clean the border of the image from artifacts. 
+%% Clean the border of the image from artifacts. 
 L = imclearborder(L);
 imshow(L)
 
 numRegions = max(L(:));
 
-% Thin the image
+%% Thin the image
 L_thin = bwmorph(L, 'thin', inf);
 imshow(L_thin)
 imgedg = L_thin;
 
-% % Find shapes based on eccentricity
+%% % Find shapes based on eccentricity
 % stats = regionprops(L, 'all');
 % shapes = [stats.Eccentricity];
 % pencils_index = find(shapes > 0.98);
@@ -116,7 +116,7 @@ imgedg = L_thin;
 % end
 
 
-%Crop the outer ridges of the image. 
+%% Crop the outer ridges of the image. 
 [width, height] = size(imgedg);
 imgedg = imcrop(imgedg,[30,30,height-60, width-60]);
 img = imcrop(img,[30,30,height-60, width-60]);
@@ -126,10 +126,8 @@ imshow(imgedg)
 imgedg = imdilate(imgedg,strel('disk',1));
 imshow(imgedg)
 
-% Compute hough transform. 
+%% Compute hough transform. 
 [H, theta, rho] = hough(imgedg);
-
-
 
 % Display transform data
 figure, imshow(imadjust(mat2gray(H)), [], 'XData', theta, 'YData', rho,'InitialMagnification', 'fit');
@@ -137,19 +135,19 @@ xlabel('\theta (degrees)'), ylabel('\rho');
 axis on, axis normal, hold on;
 colormap(hot)
 
-% Find peaks in teh Hough transform
+%% Find peaks in teh Hough transform
 % change peaks based on blobs. 
 peaks = houghpeaks(H, 6, 'threshold', 10);
 
-% Plot on colormap
+%% Plot on colormap
 x = theta(peaks(:, 2));
 y = rho(peaks(:,1));
 plot(x,y,'s', 'color', 'black')
  
-% Find lines using houghlines
+%% Find lines using houghlines
 lines = houghlines(imgedg, theta, rho, peaks, 'FillGap', 40, 'MinLength', 100);
 
-% Plot lines on original image. 
+%% Plot lines on original image. 
 figure, imshow(img), hold on
 max_len = 0 % Todo: expand for the top n lines
 xy_long = 0;
@@ -172,7 +170,7 @@ for k = 1:length(lines)
     
 end
 
-% hightlight the n longest lines
+%% hightlight the n longest lines
 plot(xy_long(:, 1), xy_long(:,2), 'LineWidth', 2, 'Color', 'red');
     
     
