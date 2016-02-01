@@ -1,8 +1,26 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Calc the angles, orientation, and position of pencils. 
 
-%% Get the image. 
-img = imread('images/CrossedPencilsA.JPG');
+%% Get the image.
+1sel = input('Choose test method: \n1: OnePencilA.JPG\n2: Red_Green_Pencils.JPG\n3: CrossedPencilsA.JPG\n4: Three-on-capret.JPG\n5: Touching.JPG\n6: SixCorssed.JPG\n\n>> ');
+
+switch sel
+    case 1 
+        image_text = 'images/OnePencilA.JPG';
+    case 2  
+        image_text = 'images/Red_Green_Pencils.JPG';
+    case 3  
+        image_text = 'images/CrossedPencilsA.JPG';
+    case 4  
+        image_text = 'images/Three-on-Carpet.JPG';
+    case 5 
+        image_text = 'images/Touching.JPG';
+    case 6
+        image_text = 'images/SixCrossed.JPG';
+    otherwise print('Not Valid input'), quit();
+end
+
+img = imread(image_text);
 imshow(img)
 
 %% Convert RGB image to chosen color space
