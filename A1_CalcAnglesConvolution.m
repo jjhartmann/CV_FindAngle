@@ -166,11 +166,23 @@ plot(x,y,'s', 'color', 'black')
 lines = houghlines(imgedg, theta, rho, peaks, 'FillGap', 40, 'MinLength', 100);
 
 %% Eliminate lines that are simlar. ie some epsilon difference between them.
-[lines(:).Length] = 0;
 for k = 1:length(lines)
     deltaPoint = lines(k).point2 - lines(k).point1;
     lines(k).Length = sqrt(deltaPoint(1)^2 + deltaPoint(2)^2);
 end
+
+% Sort by length
+linesField = fieldnames(lines);
+linesCell = struct2cell(lines);
+linesSZ = size(linesCell);
+
+linesCell = reshape(linesCell, linesSZ(1), []);
+linesCell = linesCell';
+[trash, idx] = sort(cell2mat(linesCell(:,5)) , 'descend');
+
+% Put back in struct
+linesCell = linesCell(idx);
+lines = cell2struct(linesCell, linesField, 1);
 
 %% Plot lines on original image. 
 figure, imshow(img), hold on
