@@ -2,7 +2,7 @@
 % Calc the angles, orientation, and position of pencils. 
 
 %% Get the image.
-1sel = input('Choose test method: \n1: OnePencilA.JPG\n2: Red_Green_Pencils.JPG\n3: CrossedPencilsA.JPG\n4: Three-on-capret.JPG\n5: Touching.JPG\n6: SixCorssed.JPG\n\n>> ');
+sel = input('Choose test method: \n1: OnePencilA.JPG\n2: Red_Green_Pencils.JPG\n3: CrossedPencilsA.JPG\n4: Three-on-capret.JPG\n5: Touching.JPG\n6: SixCorssed.JPG\n\n>> ');
 
 switch sel
     case 1 
@@ -23,7 +23,7 @@ end
 img = imread(image_text);
 imshow(img)
 
-%% Convert RGB image to chosen color space
+%% Convert RGB image to HVS
 RGB = im2double(img);
 cform = makecform('srgb2lab', 'AdaptedWhitePoint', whitepoint('D65'));
 I = applycform(RGB,cform);
@@ -165,6 +165,13 @@ plot(x,y,'s', 'color', 'black')
 %% Find lines using houghlines
 lines = houghlines(imgedg, theta, rho, peaks, 'FillGap', 40, 'MinLength', 100);
 
+%% Eliminate lines that are simlar. ie some epsilon difference between them.
+[lines(:).Length] = 0;
+for k = 1:length(lines)
+    deltaPoint = lines(k).point2 - lines(k).point1;
+    lines(k).Length = sqrt(deltaPoint(1)^2 + deltaPoint(2)^2);
+end
+
 %% Plot lines on original image. 
 figure, imshow(img), hold on
 max_len = 0 % Todo: expand for the top n lines
@@ -190,6 +197,7 @@ end
 
 %% hightlight the n longest lines
 plot(xy_long(:, 1), xy_long(:,2), 'LineWidth', 2, 'Color', 'red');
+hold off;
     
     
     
