@@ -27,9 +27,17 @@ imshow(img)
 RGB = im2double(img);
 cform = makecform('srgb2lab', 'AdaptedWhitePoint', whitepoint('D65'));
 I = applycform(RGB,cform);
+
+%% Determine if the image is light or dark
+GrayImageM = rgb2gray(RGB);
+imgMedian = median(GrayImageM(:));
+
+%% Apply gaussian smoothing
+RGB = imgaussfilt3(RGB, 2);
 imshow(RGB)
 
 %% Define thresholds for channel 1 based on histogram settings
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 channel1Min = 13.262;
 channel1Max = 67.444;
 
@@ -54,6 +62,36 @@ maskedRGBImage = RGB;
 
 %% Set background pixels where BW is false to zero.
 maskedRGBImage(repmat(~BW,[1 1 3])) = 0;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Convert RGB image to chosen color space
+% I = rgb2hsv(RGB);
+% 
+% Define thresholds for channel 1 based on histogram settings
+% channel1Min = 0.000;
+% channel1Max = 0.200;
+% 
+% Define thresholds for channel 2 based on histogram settings
+% channel2Min = 0.000;
+% channel2Max = 0.053;
+% 
+% Define thresholds for channel 3 based on histogram settings
+% channel3Min = 0.000;
+% channel3Max = 1.000;
+% 
+% Create mask based on chosen histogram thresholds
+% BW = (I(:,:,1) >= channel1Min ) & (I(:,:,1) <= channel1Max) & ...
+%     (I(:,:,2) >= channel2Min ) & (I(:,:,2) <= channel2Max) & ...
+%     (I(:,:,3) >= channel3Min ) & (I(:,:,3) <= channel3Max);
+% 
+% Initialize output masked image based on input image.
+% maskedRGBImage = RGB;
+% 
+% Set background pixels where BW is false to zero.
+% maskedRGBImage(repmat(~BW,[1 1 3])) = 0;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 maskedGray = rgb2gray(maskedRGBImage);
 imshow(maskedGray)
 
@@ -101,15 +139,17 @@ imshow(smooth)
 [B, L] = bwboundaries(smooth, 'holes');
 imshow(label2rgb(L))
 
-%% Clean up image based on segments
-L = bwareaopen(L, 400);
-imshow(L)
-
 %% Clean the border of the image from artifacts. 
 L = imclearborder(L);
 imshow(L)
 
-numRegions = max(L(:));
+% numRegions = max(L(:));
+
+%% Clean up image based on segments
+maskedGray = ~maskedGray;
+
+L = bwareaopen(L, 150);
+imshow(L)
 
 %% Thin the image
 L_thin = bwmorph(L, 'thin', inf);
