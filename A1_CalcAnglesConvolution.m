@@ -63,11 +63,11 @@ if (imgMedian < 0.55)
 else
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% Apply gaussian smoothing
-    RGB = imgaussfilt3(RGB, 2);
-    imshow(RGB)
+    img = imgaussfilt3(img, 2);
+    imshow(img)
 
     % Convert RGB image to chosen color space
-    I = RGB;
+    I = img;
 
     % Define thresholds for channel 1 based on histogram settings
     channel1Min = 170.000;
@@ -214,7 +214,7 @@ y = rho(peaks(:,1));
 plot(x,y,'s', 'color', 'black')
  
 %% Find lines using houghlines
-lines = houghlines(imgedg, theta, rho, peaks, 'FillGap', 40, 'MinLength', 100);
+lines = houghlines(imgedg, theta, rho, peaks, 'FillGap', 30, 'MinLength', 100);
 
 %% Eliminate lines that are simlar. ie some epsilon difference between them.
 for k = 1:length(lines)
