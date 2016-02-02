@@ -32,66 +32,70 @@ I = applycform(RGB,cform);
 GrayImageM = rgb2gray(RGB);
 imgMedian = median(GrayImageM(:));
 
-%% Apply gaussian smoothing
-RGB = imgaussfilt3(RGB, 2);
-imshow(RGB)
-
+if (imgMedian < 0.55)
 %% Define thresholds for channel 1 based on histogram settings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-channel1Min = 13.262;
-channel1Max = 67.444;
+    channel1Min = 13.262;
+    channel1Max = 67.444;
 
-% Define thresholds for channel 2 based on histogram settings
-channel2Min = -1.205;
-channel2Max = 14.341;
+    % Define thresholds for channel 2 based on histogram settings
+    channel2Min = -1.205;
+    channel2Max = 14.341;
 
-% Define thresholds for channel 3 based on histogram settings
-channel3Min = -13.473;
-channel3Max = 13.090;
+    % Define thresholds for channel 3 based on histogram settings
+    channel3Min = -13.473;
+    channel3Max = 13.090;
 
-% Create mask based on chosen histogram thresholds
-BW = (I(:,:,1) >= channel1Min ) & (I(:,:,1) <= channel1Max) & ...
-    (I(:,:,2) >= channel2Min ) & (I(:,:,2) <= channel2Max) & ...
-    (I(:,:,3) >= channel3Min ) & (I(:,:,3) <= channel3Max);
+    % Create mask based on chosen histogram thresholds
+    BW = (I(:,:,1) >= channel1Min ) & (I(:,:,1) <= channel1Max) & ...
+        (I(:,:,2) >= channel2Min ) & (I(:,:,2) <= channel2Max) & ...
+        (I(:,:,3) >= channel3Min ) & (I(:,:,3) <= channel3Max);
 
-% Invert mask
-BW = ~BW;
+    % Invert mask
+    BW = ~BW;
 
-% Initialize output masked image based on input image.
-maskedRGBImage = RGB;
+    % Initialize output masked image based on input image.
+    maskedRGBImage = RGB;
 
-%% Set background pixels where BW is false to zero.
-maskedRGBImage(repmat(~BW,[1 1 3])) = 0;
+    % Set background pixels where BW is false to zero.
+    maskedRGBImage(repmat(~BW,[1 1 3])) = 0;
+
+else
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% Apply gaussian smoothing
+    RGB = imgaussfilt3(RGB, 2);
+    imshow(RGB)
+
+    % Convert RGB image to chosen color space
+    I = rgb2hsv(RGB);
+
+    % Define thresholds for channel 1 based on histogram settings
+    channel1Min = 0.000;
+    channel1Max = 0.200;
+
+    % Define thresholds for channel 2 based on histogram settings
+    channel2Min = 0.000;
+    channel2Max = 0.053;
+
+    % Define thresholds for channel 3 based on histogram settings
+    channel3Min = 0.000;
+    channel3Max = 1.000;
+
+    % Create mask based on chosen histogram thresholds
+    BW = (I(:,:,1) >= channel1Min ) & (I(:,:,1) <= channel1Max) & ...
+        (I(:,:,2) >= channel2Min ) & (I(:,:,2) <= channel2Max) & ...
+        (I(:,:,3) >= channel3Min ) & (I(:,:,3) <= channel3Max);
+
+    % Initialize output masked image based on input image.
+    maskedRGBImage = RGB;
+
+    % Set background pixels where BW is false to zero.
+    maskedRGBImage(repmat(~BW,[1 1 3])) = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end
 
-% Convert RGB image to chosen color space
-% I = rgb2hsv(RGB);
-% 
-% Define thresholds for channel 1 based on histogram settings
-% channel1Min = 0.000;
-% channel1Max = 0.200;
-% 
-% Define thresholds for channel 2 based on histogram settings
-% channel2Min = 0.000;
-% channel2Max = 0.053;
-% 
-% Define thresholds for channel 3 based on histogram settings
-% channel3Min = 0.000;
-% channel3Max = 1.000;
-% 
-% Create mask based on chosen histogram thresholds
-% BW = (I(:,:,1) >= channel1Min ) & (I(:,:,1) <= channel1Max) & ...
-%     (I(:,:,2) >= channel2Min ) & (I(:,:,2) <= channel2Max) & ...
-%     (I(:,:,3) >= channel3Min ) & (I(:,:,3) <= channel3Max);
-% 
-% Initialize output masked image based on input image.
-% maskedRGBImage = RGB;
-% 
-% Set background pixels where BW is false to zero.
-% maskedRGBImage(repmat(~BW,[1 1 3])) = 0;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 maskedGray = rgb2gray(maskedRGBImage);
 imshow(maskedGray)
 
@@ -137,18 +141,21 @@ imshow(smooth)
 
 %% Find Regions and display
 [B, L] = bwboundaries(smooth, 'holes');
+
+%% TEST
+% L = maskedGray;
+%%
+
 imshow(label2rgb(L))
 
 %% Clean the border of the image from artifacts. 
 L = imclearborder(L);
 imshow(L)
 
-% numRegions = max(L(:));
+numRegions = max(L(:));
 
 %% Clean up image based on segments
-maskedGray = ~maskedGray;
-
-L = bwareaopen(L, 150);
+L = bwareaopen(L, 400);
 imshow(L)
 
 %% Thin the image
