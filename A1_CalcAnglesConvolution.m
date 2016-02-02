@@ -181,8 +181,64 @@ linesCell = linesCell';
 [trash, idx] = sort(cell2mat(linesCell(:,5)) , 'descend');
 
 % Put back in struct
-linesCell = linesCell(idx);
-lines = cell2struct(linesCell, linesField, 1);
+lines = lines(idx);
+
+%% Remove duplicates. 
+
+lineLen = length(lines);
+lenEpsilon = 40;
+xyEpsilon = 30;
+
+k = 1;
+while k <= lineLen
+    
+    xy1a = lines(k).point1;
+    xy2a = lines(k).point2;
+    % Iterate over the next K+1 lines;
+    i = k + 1;
+    while i <= lineLen
+        
+        xy1b = lines(i).point1;
+        xy2b = lines(i).point2;
+       
+        % compare end points. 
+        deltaLength = abs(lines(k).Length - lines(i).Length); 
+        deltaXY1 = (abs(xy1a(1) - xy1b(1)) + abs(xy1a(2) - xy1b(2)));
+        deltaXY2 = (abs(xy2a(1) - xy2b(1)) + abs(xy2a(2) - xy2b(2)));
+
+        % remove the line
+        if (deltaXY1 <= xyEpsilon || deltaXY2 <= xyEpsilon)
+            % check to make sure it fits on line.
+            f1 = polyfit([xy1a(1), xy2a(1)], [xy1a(2), xy2a(2)], 1);
+            f2 = polyfit([xy1b(1), xy2b(1)], [xy1b(2), xy2b(2)], 1);
+            
+            testX = 0;
+            if (deltaXY1 <= xyEpsilon)
+                testX = lines(i).point2(1);
+            else
+                testX = lines(i).point1(1);
+            end
+            
+            pY1 = polyval(f1, testX);
+            pY2 = polyval(f2, testX);
+            
+            deltaP = abs(pY1 - pY2);
+            
+            % remove line if a fit
+            if (deltaP <= xyEpsilon)
+                lines(:,i)=[];
+                i = i - 1;
+                lineLen = lineLen - 1;
+            end
+        end  
+
+        i = i + 1;
+    end
+    
+    k = k + 1;
+end
+
+
 
 %% Plot lines on original image. 
 figure, imshow(img), hold on
