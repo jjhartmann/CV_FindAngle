@@ -65,7 +65,7 @@ else
     %% Apply gaussian smoothing
     RGB = im2double(img);
     img = imgaussfilt3(img, 2);
-    imshow(img)
+    figure, imshow(img)
 
     % Convert RGB image to chosen color space
     I = img;
@@ -95,7 +95,7 @@ else
 
     % Set background pixels where BW is false to zero.
     maskedRGBImage(repmat(~BW,[1 1 3])) = 0;
-    imshow(maskedRGBImage)
+    figure, imshow(maskedRGBImage)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
