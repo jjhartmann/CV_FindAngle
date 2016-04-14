@@ -241,6 +241,9 @@ end
 %% Find orientation
 
 
+
+
+
 %% Plot lines on original image. 
 figure, imshow(img), hold on
 max_len = 0 % Todo: expand for the top n lines
